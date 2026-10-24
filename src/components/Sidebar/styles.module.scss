@@ -1,0 +1,120 @@
+.sidebar {
+  position: fixed;
+  top: var(--topbar);
+  bottom: 0;
+  left: 0;
+  z-index: 15;
+  width: var(--sidebar);
+  padding: 12px;
+  overflow-y: auto;
+  background: var(--bg);
+
+  section {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+
+    & + section { border-top: 1px solid var(--line); }
+  }
+
+  h3 { margin: 0 0 4px; padding: 6px 12px; font-size: 16px; font-weight: 500; }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 14px;
+  text-align: left;
+
+  span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  &:hover { background: var(--surface); }
+  &[data-active="true"] { background: var(--surface); font-weight: 500; }
+}
+
+.row {
+  position: relative;
+
+  // the delete button takes the count's place on hover
+  &:hover .remove { opacity: 1; }
+  &:hover .count, &:focus-within .count { visibility: hidden; }
+}
+
+.count {
+  flex: none;
+  margin-left: auto;
+  color: var(--text-2);
+  font-size: 12px;
+}
+
+.remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  opacity: 0;
+  transition: opacity 0.15s;
+
+  &:hover { background: var(--surface-hover); color: var(--text); }
+  &:focus-visible { opacity: 1; }
+
+  &[data-armed="true"] {
+    top: 6px;
+    width: auto;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 14px;
+    background: var(--brand);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 1;
+  }
+}
+
+.newCategory input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #1c62b9;
+  border-radius: 10px;
+  background: var(--bg);
+  outline: none;
+}
+
+// Wide screens: shown unless toggled off. Narrow screens and overlay pages: shown only when toggled on.
+@mixin open-scrim {
+  display: block;
+  position: fixed;
+  inset: var(--topbar) 0 0;
+  z-index: 14;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.scrim { display: none; }
+
+.sidebar[data-toggled="true"] { display: none; }
+
+.sidebar[data-overlay="true"] { display: none; box-shadow: var(--shadow); }
+.sidebar[data-overlay="true"][data-toggled="true"] { display: block; }
+.scrim[data-overlay="true"][data-toggled="true"] { @include open-scrim; }
+
+@media (max-width: 1000px) {
+  .sidebar { display: none; box-shadow: var(--shadow); }
+  .sidebar[data-toggled="true"] { display: block; }
+  .scrim[data-toggled="true"] { @include open-scrim; }
+}

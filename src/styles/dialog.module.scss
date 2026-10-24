@@ -1,0 +1,57 @@
+.dialog {
+  width: min(520px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+
+  &::backdrop { background: rgba(0, 0, 0, 0.5); }
+}
+
+.sheet { display: flex; flex-direction: column; gap: 18px; padding: 20px 24px 24px; }
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 { margin: 0; font-size: 20px; font-weight: 500; }
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+
+  &:hover { background: var(--surface); }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  span { font-size: 13px; font-weight: 500; color: var(--text-2); }
+
+  input, select {
+    height: 42px;
+    padding: 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    outline: none;
+
+    &:focus { border-color: #1c62b9; box-shadow: 0 0 0 1px #1c62b9; }
+  }
+}
+
+.hint, .error { margin: 0; font-size: 13px; color: var(--text-2); }
+.error { color: var(--brand); }
+
+.foot { display: flex; justify-content: flex-end; gap: 8px; }

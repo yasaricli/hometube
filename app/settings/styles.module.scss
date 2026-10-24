@@ -1,0 +1,95 @@
+.page { max-width: 760px; margin: 0 auto; }
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 8px 0 24px;
+
+  h1 { margin: 0; font-size: 28px; font-weight: 700; }
+}
+
+.status { color: var(--text-2); font-size: 13px; }
+
+.card {
+  margin-bottom: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+
+  h2 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  > p { margin: 0 0 16px; color: var(--text-2); }
+
+  b { display: block; font-weight: 500; }
+  small { display: block; margin-top: 2px; color: var(--text-2); font-size: 13px; line-height: 1.4; }
+}
+
+.options { display: flex; flex-direction: column; gap: 4px; }
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  input { flex: none; width: 18px; height: 18px; margin: 0; accent-color: var(--brand); }
+  &:hover { background: var(--surface); }
+  &[data-checked="true"] { background: var(--surface); }
+}
+
+.note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #f0a500 15%, transparent);
+  font-size: 13px;
+}
+
+.switch, .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 12px;
+  cursor: pointer;
+}
+
+.switch input {
+  flex: none;
+  appearance: none;
+  position: relative;
+  width: 40px;
+  height: 22px;
+  margin: 0;
+  border-radius: 11px;
+  background: var(--surface-hover);
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s;
+  }
+
+  &:checked { background: var(--brand); }
+  &:checked::after { transform: translateX(18px); }
+}
+
+.row select {
+  flex: none;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--bg);
+}

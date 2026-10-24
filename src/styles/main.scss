@@ -1,0 +1,91 @@
+:root {
+  --bg: #ffffff;
+  --surface: #f2f2f2;
+  --surface-hover: #e5e5e5;
+  --text: #0f0f0f;
+  --text-2: #606060;
+  --line: rgba(0, 0, 0, 0.1);
+  --chip-active-bg: #0f0f0f;
+  --chip-active-text: #ffffff;
+  --brand: #e5202e;
+  --brand-hover: #c81825;
+  --overlay: rgba(0, 0, 0, 0.8);
+  --shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
+  --topbar: 56px;
+  --sidebar: 240px;
+  --font: var(--font-sans), system-ui, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0f0f;
+    --surface: #272727;
+    --surface-hover: #3f3f3f;
+    --text: #f1f1f1;
+    --text-2: #aaaaaa;
+    --line: rgba(255, 255, 255, 0.1);
+    --chip-active-bg: #f1f1f1;
+    --chip-active-text: #0f0f0f;
+    --shadow: 0 4px 32px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+button { cursor: pointer; }
+
+img { display: block; }
+
+::selection { background: color-mix(in srgb, var(--brand) 25%, transparent); }
+
+// shared pill buttons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--surface);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: var(--surface-hover); }
+  &:disabled { opacity: 0.5; cursor: default; }
+}
+
+.btnPrimary {
+  @extend .btn;
+  background: var(--text);
+  color: var(--bg);
+
+  &:hover { background: var(--text); opacity: 0.85; }
+}
+
+.btnBrand {
+  @extend .btn;
+  background: var(--brand);
+  color: #fff;
+
+  &:hover { background: var(--brand-hover); }
+}

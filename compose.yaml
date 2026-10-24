@@ -1,0 +1,31 @@
+name: hometube
+
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3100:3000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/hometube
+      PORT: 3000
+      MEDIA_DIR: /media
+    volumes:
+      - ./media:/media
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:

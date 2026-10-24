@@ -1,0 +1,25 @@
+{
+  "name": "hometube",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env server.js --dev",
+    "build": "next build",
+    "start": "node server.js",
+    "test": "node lib/youtube.test.js"
+  },
+  "dependencies": {
+    "mongoose": "^9.11.4",
+    "next": "^16.4.3",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "socket.io": "^4.8.4",
+    "socket.io-client": "^4.8.4",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "sass": "^1.106.1"
+  }
+}

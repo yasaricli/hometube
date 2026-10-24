@@ -1,0 +1,15 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 6px;
+}
+
+.word {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.06em;
+
+  b { font-weight: 700; }
+}

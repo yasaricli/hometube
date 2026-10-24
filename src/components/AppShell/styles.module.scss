@@ -1,0 +1,10 @@
+// Wide screens leave room for the sidebar unless it's toggled off; narrow screens overlay it.
+.main { min-width: 0; margin-left: var(--sidebar); padding: 24px; }
+
+.shell[data-toggled="true"] .main { margin-left: 0; }
+
+.shell[data-theater="true"] .main { margin-left: 0; padding: 0; }
+
+@media (max-width: 1000px) {
+  .main { margin-left: 0; padding: 16px; }
+}
