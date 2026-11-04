@@ -22,7 +22,7 @@ services:
       PORT: 3000
       MEDIA_DIR: /media
     volumes:
-      - ./media:/media
+      - ${HOMETUBE_MEDIA_PATH:-./media}:/media
     depends_on:
       mongo:
         condition: service_healthy

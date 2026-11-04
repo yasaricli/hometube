@@ -65,14 +65,13 @@ Open **http://localhost:3100** and click **Add video**.
 
 Videos are stored in the `media` folder next to `compose.yaml` (one folder per video with `video.mp4` and `thumb.jpg`, channel pictures under `media/channels`); the library itself lives in MongoDB's `mongo-data` volume. yt-dlp updates itself every time the container starts, so a `docker compose restart app` fixes most "can't download" errors after YouTube changes something.
 
-To store videos somewhere else, for example on a NAS mount, put your own settings in `compose.override.yaml`:
+To store videos somewhere else, for example on an external disk or a NAS mount, set `HOMETUBE_MEDIA_PATH` in a `.env` file next to `compose.yaml` (Compose reads it automatically) and run `docker compose up -d` again:
 
-```yaml
-services:
-  app:
-    volumes: !override
-      - /mnt/nas/videos:/media
+```sh
+HOMETUBE_MEDIA_PATH=/mnt/nas/videos
 ```
+
+On macOS, Docker Desktop must be allowed to access that folder (Settings → Resources → File sharing; `/Volumes` is shared by default).
 
 ## Updating
 
