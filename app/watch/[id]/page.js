@@ -22,6 +22,14 @@ import { getSocket } from "@/utils/socket";
 // Styles
 import Styles from "./styles.module.scss";
 
+// What the player area says until the file is there.
+const notReadyText = (video) => {
+  if (video.status === "failed") return `This video couldn't be downloaded: ${video.error}`;
+  if (video.status === "waiting") return "Waiting for the connection to come back.";
+  if (video.status === "queued") return "This video is waiting its turn to download.";
+  return "This video is still downloading.";
+};
+
 const Watch = () => {
   const { id } = useParams();
   const { videos, channels, categories, loaded } = useLibraryStore();
@@ -54,7 +62,7 @@ const Watch = () => {
         {video.status === "ready" ? (
           <video key={id} src={`/media/${id}/video.mp4`} poster={`/media/${id}/thumb.jpg`} controls autoPlay playsInline />
         ) : (
-          <p>This video is still downloading.</p>
+          <p className={Styles.notReady}>{notReadyText(video)}</p>
         )}
       </div>
 

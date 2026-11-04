@@ -12,6 +12,9 @@
   video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 }
 
+// a long yt-dlp error stays readable instead of running across the band
+.notReady { max-width: 640px; padding: 0 16px; text-align: center; }
+
 .layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 400px;

@@ -57,8 +57,10 @@ const VideoCard = ({ video, compact }) => {
   const ready = video.status === "ready";
   const channelName = channel?.name || "Unknown channel";
 
+  // the button sits inside the card's link: retry without opening the video
   const retry = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     getSocket().emit("video:retry", video.id, () => {});
   };
 
@@ -96,7 +98,7 @@ const VideoCard = ({ video, compact }) => {
     </>
   );
 
-  if (!ready) return <div className={`${Styles.card} ${compact ? Styles.compact : ""}`}>{body}</div>;
+  // every card opens the video's page, so one that can't download can still be deleted or recategorized
   return (
     <Link href={`/watch/${video.id}`} className={`${Styles.card} ${compact ? Styles.compact : ""}`}>
       {body}
