@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 // Components
 import AddVideoDialog from "@/components/AddVideoDialog";
 import AppShell from "@/components/AppShell";
@@ -14,6 +16,7 @@ import useLibraryStore from "@/store/useLibraryStore";
 import useUiStore from "@/store/useUiStore";
 
 // Utils
+import { mixFeed } from "@/utils/feed";
 import { matches } from "@/utils/shortcuts";
 
 // Styles
@@ -22,8 +25,12 @@ import Styles from "./styles.module.scss";
 const Home = () => {
   const { videos, channels, loaded } = useLibraryStore();
   const { query, category } = useUiStore();
+  // picked once per visit: "All" is mixed differently each time you come back, but holds still meanwhile
+  const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
   const channelName = (id) => channels.find((c) => c.id === id)?.name || "";
-  const shown = videos.filter((v) => (!category || v.category === category) && matches(v, channelName(v.channel), query));
+  const found = videos.filter((v) => (!category || v.category === category) && matches(v, channelName(v.channel), query));
+  // categories and search results stay newest first, as the server sends them
+  const shown = !category && !query.trim() ? mixFeed(found, seed) : found;
 
   return (
     <AppShell>

@@ -31,6 +31,7 @@ const videoWire = (v) => ({
   error: v.error,
   retryAt: v.retryAt ? new Date(v.retryAt).getTime() : 0,
   size: v.size,
+  watchedAt: v.watchedAt ? new Date(v.watchedAt).getTime() : 0,
   progress: progress.get(String(v._id)),
 });
 
@@ -201,6 +202,13 @@ function wire(io) {
       if (!validId(id)) return ack();
       const update = validId(category) ? { category } : { $unset: { category: 1 } };
       await Video.updateOne({ _id: id }, update);
+      ack();
+      await broadcast();
+    });
+
+    socket.on("video:watched", async (id, ack) => {
+      if (!validId(id)) return ack();
+      await Video.updateOne({ _id: id, status: "ready" }, { watchedAt: new Date() });
       ack();
       await broadcast();
     });
