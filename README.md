@@ -1,51 +1,52 @@
-# HomeTube
+<p align="center">
+  <img src="docs/logo.svg" alt="HomeTube logo" width="96">
+</p>
 
-Your own video library for the homelab. Paste a YouTube link, HomeTube downloads the video to your server, and it shows up on a familiar home page where you can watch it any time: offline, ad-free, and long after the original is gone.
+<h1 align="center">HomeTube</h1>
 
-![HomeTube home page](docs/home.jpg)
+<p align="center">
+  Your own YouTube for the homelab.<br>
+  Paste a link, HomeTube downloads the video or Short to your server, and you watch it on a familiar home page:<br>
+  offline, ad-free, and long after the original is gone.
+</p>
+
+<p align="center">
+  <a href="#install-with-docker-compose">Install</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#configuration">Configuration</a> ·
+  <a href="LICENSE">MIT License</a>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/home.jpg" alt="Home page"></td>
+    <td width="50%"><img src="docs/home-dark.jpg" alt="Home page in the dark theme"></td>
+  </tr>
+</table>
 
 ## Features
 
-### Save a video by its link
+- **Save by link.** **Add video / Shorts** takes a video link (watch, youtu.be, embed, live), a Short (`youtube.com/shorts/…`), or a channel's Shorts page (`youtube.com/@name/shorts`) to save all of its Shorts at once. Pick a category right away if you like.
+- **Shorts, like on YouTube.** Shorts get their own player: one vertical Short per screen, scroll, swipe or use the arrow keys for the next one. They play in a mixed order (the ones you haven't seen first), can be filtered by category, and stay out of the regular video grids.
+- **A cinema-style player.** The video sits on a full-width black stage with the channel, category and description below and **up next** on the right. When a video ends, the next one from the same channel starts after a short countdown (the next episode first), which you can cancel.
+- **Channels.** Videos are grouped by channel with its profile picture. On a channel's page, **Get videos** lists its uploads or its Shorts on YouTube, marks what you already have and downloads what you pick. **Refresh** reads the channel's name and picture again, and **Stop downloads** takes the channel's unfinished downloads off the queue.
+- **Live downloads.** Every card shows its state as it happens: queued, the percentage, then processing. Downloads run one after another in the background, with a short break in between so YouTube doesn't take the server for a bot.
+- **Survives a bad connection, and YouTube.** When the internet drops, a download waits and retries on its own. When YouTube asks to confirm you're not a bot, the whole queue pauses for a while and carries on by itself. Members-only videos are marked and never queued.
+- **Settings for your bandwidth and screens.** The highest quality to save (360p up to 4K), files that play everywhere (H.264) or smaller and sharper ones (VP9/AV1), and a speed limit.
+- **And the rest:** categories with counts in the sidebar and as chips on the home page, a home feed mixed by what's new, what you watched and your favourite categories, search across titles and channels, and light and dark themes that follow your system.
 
-Click **Add video**, paste a YouTube link (watch, youtu.be, shorts, embed or live URLs) and press **Fetch**. Pick a category right away if you like.
-
-![Add a video](docs/add-video.jpg)
-
-### Watch the downloads happen
-
-Every card shows its download live: queued, the percentage, then processing. Downloads run one after another in the background, and the top bar keeps a running total of what's on your server.
-
-![Downloads in progress](docs/downloading.jpg)
-
-### A cinema-style player
-
-The watch page puts the video on a full-width black stage. Below it: the channel, the category, a link back to YouTube and the description. On the right, **up next** shows more from the same category, the same channel, or everything.
-
-![Watch page](docs/watch.jpg)
-
-### Channels, and getting their videos
-
-Videos are grouped by channel automatically, with the channel's profile picture saved alongside. On a channel's page, **Get videos** lists its uploads on YouTube, marks the ones you already have, estimates their size, and downloads the ones you pick.
-
-![Channel page](docs/channel.jpg)
-
-![Picking videos from a channel](docs/get-videos.jpg)
-
-### Settings for your bandwidth and your screens
-
-Choose the highest quality to save (360p up to 4K), whether files should play on every device (H.264) or be smaller and sharper (VP9/AV1), and a speed limit so downloads don't fill your connection.
-
-![Settings](docs/settings.jpg)
-
-### And the rest
-
-- **Categories** in the sidebar with video counts, plus chips on the home page to filter by them.
-- **Search** across titles and channel names.
-- **Survives a bad connection.** When the internet drops, a download waits and retries on its own (15 s, 30 s, 1 min… up to every 5 min) and picks up where it left off; everything waiting starts again the moment a download succeeds.
-- **Light and dark** themes follow your system.
-
-![Dark theme](docs/home-dark.jpg)
+<table>
+  <tr>
+    <td width="33%"><img src="docs/watch.jpg" alt="Watch page"><br><sub>Watch page with up next</sub></td>
+    <td width="33%"><img src="docs/channel.jpg" alt="Channel page"><br><sub>A channel's page</sub></td>
+    <td width="33%"><img src="docs/get-videos.jpg" alt="Get videos dialog"><br><sub>Picking uploads from a channel</sub></td>
+  </tr>
+  <tr>
+    <td width="33%"><img src="docs/add-video.jpg" alt="Add video dialog"><br><sub>Adding a link</sub></td>
+    <td width="33%"><img src="docs/downloading.jpg" alt="Downloads in progress"><br><sub>Downloads in progress</sub></td>
+    <td width="33%"><img src="docs/settings.jpg" alt="Settings page"><br><sub>Settings</sub></td>
+  </tr>
+</table>
 
 ## Use it responsibly
 
@@ -61,7 +62,7 @@ cd hometube
 docker compose up -d --build
 ```
 
-Open **http://localhost:3100** and click **Add video**.
+Open **http://localhost:3100** and click **Add video / Shorts**.
 
 Videos are stored in the `media` folder next to `compose.yaml` (one folder per video with `video.mp4` and `thumb.jpg`, channel pictures under `media/channels`); the library itself lives in MongoDB's `mongo-data` volume. yt-dlp updates itself every time the container starts, so a `docker compose restart app` fixes most "can't download" errors after YouTube changes something.
 
@@ -103,12 +104,12 @@ Requires Node.js 24, MongoDB, [yt-dlp](https://github.com/yt-dlp/yt-dlp) and ffm
 cp .env.example .env
 npm install
 npm run dev     # http://localhost:3100
-npm test        # link parsing, error classification and format self-check
+npm test        # link parsing, error classification, formats, feed order and up next
 ```
 
 ## How it works
 
-A single Node process (`server.js`) runs Next.js, socket.io and the download queue. Adding a link reads the video's details with `yt-dlp -J`, saves it to MongoDB and queues it; the queue runs `yt-dlp` with the format from your settings and streams its progress to every open browser. Network errors put a video in a waiting state with growing delays instead of failing it. Finished files are served from `/media/<id>/…` with HTTP range support, so the player can seek.
+A single Node process (`server.js`) runs Next.js, socket.io and the download queue. Adding a link reads the video's details with `yt-dlp -J`, saves it to MongoDB and queues it; the queue runs `yt-dlp` with the format from your settings and streams its progress to every open browser. Network errors put a video in a waiting state with growing delays instead of failing it, and YouTube's bot check pauses the whole queue for a while. Shorts are recognised from yt-dlp's `media_type`, a `/shorts/` link or the channel's Shorts tab, and download at the quality setting's width instead of its height. Finished files are served from `/media/<id>/…` with HTTP range support, so the player can seek.
 
 Stack: Next.js, React, zustand, SCSS modules, socket.io, MongoDB (mongoose), yt-dlp, ffmpeg.
 
