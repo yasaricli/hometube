@@ -6,8 +6,8 @@ import { Server } from "socket.io";
 import { MONGODB_URI, PORT, MEDIA_DIR } from "./lib/config.js";
 import { Channel, Category, Video, Settings, getSettings, QUALITIES, RATE_LIMITS } from "./lib/models.js";
 import { serveMedia, mediaDir, channelDir } from "./lib/media.js";
-import { startQueue, enqueue, cancel, progress, stopRunning, wakeWaiting } from "./lib/queue.js";
-import { videoIdOf, watchUrl, probe, videoFields, channelAvatarUrl, channelVideos } from "./lib/youtube.js";
+import { startQueue, enqueue, cancel, progress, stopRunning, wakeWaiting, resume } from "./lib/queue.js";
+import { videoIdOf, watchUrl, probe, videoFields, channelAvatarUrl, channelVideos, isBotCheck, isMembersOnly } from "./lib/youtube.js";
 
 const dev = process.argv.includes("--dev");
 const app = next({ dev });
@@ -30,6 +30,9 @@ const videoWire = (v) => ({
   status: v.status,
   error: v.error,
   retryAt: v.retryAt ? new Date(v.retryAt).getTime() : 0,
+  // waiting because YouTube took us for a bot, not because the connection dropped
+  slowedDown: v.status === "waiting" && isBotCheck(v.error),
+  membersOnly: v.status === "failed" && isMembersOnly(v.error),
   size: v.size,
   watchedAt: v.watchedAt ? new Date(v.watchedAt).getTime() : 0,
   progress: progress.get(String(v._id)),
@@ -101,7 +104,8 @@ async function browseChannel(id) {
 async function addFromChannel({ channel: id, videos, category }) {
   const channel = validId(id) && (await Channel.findById(id).lean());
   if (!channel) return { error: "This channel no longer exists." };
-  const picked = (Array.isArray(videos) ? videos : []).filter((v) => videoIdOf(v?.ytId) === v.ytId);
+  // members-only videos can't be downloaded, so they're never queued
+  const picked = (Array.isArray(videos) ? videos : []).filter((v) => videoIdOf(v?.ytId) === v.ytId && !v.membersOnly);
   const saved = new Set((await Video.find({ ytId: { $in: picked.map((v) => v.ytId) } }, { ytId: 1 }).lean()).map((v) => v.ytId));
   const fresh = picked.filter((v) => !saved.has(v.ytId));
   const created = await Video.insertMany(
@@ -196,6 +200,8 @@ function wire(io) {
       ack();
       await broadcast();
       enqueue(id);
+      // also ends a pause after YouTube's bot check
+      resume();
     });
 
     socket.on("video:category", async ({ id, category }, ack) => {

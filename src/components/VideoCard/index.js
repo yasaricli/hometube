@@ -19,8 +19,9 @@ import Styles from "./styles.module.scss";
 
 const statusText = (video) => {
   if (video.status === "queued") return "Queued";
+  if (video.membersOnly) return "Members only";
   if (video.status === "failed") return "Download failed";
-  if (video.status === "waiting") return "Waiting for connection";
+  if (video.status === "waiting") return video.slowedDown ? "YouTube asked to slow down" : "Waiting for connection";
   if (video.progress?.stage === "processing") return "Processing…";
   return `Downloading ${Math.floor(video.progress?.percent || 0)}%`;
 };
@@ -79,10 +80,13 @@ const VideoCard = ({ video, compact }) => {
           </span>
           {video.status === "failed" && (
             <span className={Styles.error} title={video.error}>
-              {video.error}
-              <button type="button" onClick={retry}>
-                <Icon name="retry" size={14} /> Retry
-              </button>
+              {video.membersOnly ? "Only the channel's members can watch this on YouTube" : video.error}
+              {/* retrying a members-only video fails the same way */}
+              {!video.membersOnly && (
+                <button type="button" onClick={retry}>
+                  <Icon name="retry" size={14} /> Retry
+                </button>
+              )}
             </span>
           )}
           {video.status === "waiting" && (

@@ -18,6 +18,7 @@ import UpNext from "./partials/UpNext";
 import useLibraryStore from "@/store/useLibraryStore";
 
 // Utils
+import { fmtClock } from "@/utils/shortcuts";
 import { getSocket } from "@/utils/socket";
 
 // Styles
@@ -25,7 +26,11 @@ import Styles from "./styles.module.scss";
 
 // What the player area says until the file is there.
 const notReadyText = (video) => {
+  if (video.membersOnly) return "This video is only for the channel's members on YouTube, so it can't be downloaded. You can delete it.";
   if (video.status === "failed") return `This video couldn't be downloaded: ${video.error}`;
+  if (video.status === "waiting" && video.slowedDown) {
+    return `YouTube asked HomeTube to slow down, so downloads are paused for a while. They resume on their own at ${fmtClock(video.retryAt)}.`;
+  }
   if (video.status === "waiting") return "Waiting for the connection to come back.";
   if (video.status === "queued") return "This video is waiting its turn to download.";
   return "This video is still downloading.";

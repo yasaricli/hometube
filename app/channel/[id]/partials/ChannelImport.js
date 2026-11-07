@@ -39,9 +39,10 @@ const ChannelImport = ({ channel }) => {
   const [picked, setPicked] = useState([]);
   const [category, setCategory] = useState("");
 
-  const fresh = videos.filter((v) => !v.saved);
+  // members-only uploads can't be downloaded, so they're shown but never picked
+  const fresh = videos.filter((v) => !v.saved && !v.membersOnly);
   const shown = videos.filter((v) => filter === "all" || (filter === "saved") === v.saved);
-  const count = { new: fresh.length, saved: videos.length - fresh.length, all: videos.length };
+  const count = { new: videos.filter((v) => !v.saved).length, saved: videos.filter((v) => v.saved).length, all: videos.length };
   const allPicked = !!fresh.length && fresh.every((v) => picked.includes(v.ytId));
   // YouTube's channel list has no file sizes, so estimate them from the library's average bitrate
   const rate = bytesPerSecond(library);
@@ -123,14 +124,21 @@ const ChannelImport = ({ channel }) => {
               <ul className={Styles.importList}>
                 {shown.map((v) => (
                   <li key={v.ytId}>
-                    <label data-saved={v.saved}>
-                      <input type="checkbox" checked={v.saved || picked.includes(v.ytId)} disabled={v.saved} onChange={() => toggle(v.ytId)} />
+                    <label data-saved={v.saved || v.membersOnly}>
+                      <input
+                        type="checkbox"
+                        checked={v.saved || picked.includes(v.ytId)}
+                        disabled={v.saved || v.membersOnly}
+                        onChange={() => toggle(v.ytId)}
+                      />
                       <span className={Styles.importThumb}>
                         <img src={`https://i.ytimg.com/vi/${v.ytId}/mqdefault.jpg`} alt="" loading="lazy" />
                         {!!v.duration && <small>{fmtDuration(v.duration)}</small>}
                       </span>
                       <span className={Styles.importTitle}>{v.title}</span>
-                      {v.saved ? <em>In library</em> : <small className={Styles.importSize}>≈ {fmtBytes(estimate(v))}</small>}
+                      {v.saved && <em>In library</em>}
+                      {!v.saved && v.membersOnly && <em>Members only</em>}
+                      {!v.saved && !v.membersOnly && <small className={Styles.importSize}>≈ {fmtBytes(estimate(v))}</small>}
                     </label>
                   </li>
                 ))}
