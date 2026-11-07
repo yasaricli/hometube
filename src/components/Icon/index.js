@@ -7,6 +7,7 @@ const PATHS = {
       <path d="M20 20l-4.4-4.4" />
     </>
   ),
+  play: <path d="M8 5.5v13l10.5-6.5z" />,
   plus: <path d="M12 5v14M5 12h14" />,
   home: <path d="M4 11l8-6.5 8 6.5v8a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" />,
   tag: (

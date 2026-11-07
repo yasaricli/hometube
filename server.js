@@ -7,7 +7,7 @@ import { MONGODB_URI, PORT, MEDIA_DIR } from "./lib/config.js";
 import { Channel, Category, Video, Settings, getSettings, QUALITIES, RATE_LIMITS } from "./lib/models.js";
 import { serveMedia, mediaDir, channelDir } from "./lib/media.js";
 import { startQueue, enqueue, cancel, progress, stopRunning, wakeWaiting, resume } from "./lib/queue.js";
-import { videoIdOf, watchUrl, probe, videoFields, channelAvatarUrl, channelVideos, isBotCheck, isMembersOnly } from "./lib/youtube.js";
+import { videoIdOf, watchUrl, probe, videoFields, channelInfo, channelVideos, isBotCheck, isMembersOnly } from "./lib/youtube.js";
 
 const dev = process.argv.includes("--dev");
 const app = next({ dev });
@@ -46,23 +46,43 @@ async function library() {
   ]);
   return {
     videos: videos.map(videoWire),
-    channels: channels.map((c) => ({ id: String(c._id), name: c.name, url: c.url, avatar: !!c.avatar })),
+    // version: changes when the channel is refreshed, so the browser loads the new avatar
+    channels: channels.map((c) => ({ id: String(c._id), name: c.name, url: c.url, avatar: !!c.avatar, version: new Date(c.updatedAt).getTime() })),
     categories: categories.map((c) => ({ id: String(c._id), name: c.name })),
   };
 }
 
-// Saves the channel's profile picture next to the videos; the letter avatar stays if it can't.
-async function saveAvatar(channel) {
-  if (!channel.url) return false;
-  const src = await channelAvatarUrl(channel.url);
-  if (!src) return false;
+async function writeAvatar(channel, src) {
   const res = await fetch(src);
   if (!res.ok) throw new Error(`avatar ${res.status}`);
   const dir = channelDir(channel._id);
   await fs.mkdir(dir, { recursive: true });
   await fs.writeFile(`${dir}/avatar.jpg`, Buffer.from(await res.arrayBuffer()));
+}
+
+// Saves the channel's profile picture next to the videos; the letter avatar stays if it can't.
+async function saveAvatar(channel) {
+  if (!channel.url) return false;
+  const { avatar } = await channelInfo(channel.url);
+  if (!avatar) return false;
+  await writeAvatar(channel, avatar);
   await Channel.updateOne({ _id: channel._id }, { avatar: true });
   return true;
+}
+
+// Reads the channel again from YouTube: its name, link and profile picture.
+async function refreshChannel(id) {
+  const channel = validId(id) && (await Channel.findById(id).lean());
+  if (!channel?.url) return { error: "This channel has no YouTube link to read from." };
+  const info = await channelInfo(channel.url).catch((err) => ({ error: err.message }));
+  if (info.error) return { error: `Couldn't read the channel: ${info.error}` };
+  const saved = info.avatar && (await writeAvatar(channel, info.avatar).then(() => true, () => false));
+  const update = { avatar: !!saved || channel.avatar };
+  if (info.name) update.name = info.name;
+  if (info.url) update.url = info.url;
+  // touch updatedAt even when nothing changed, so a new picture under the same name shows up
+  await Channel.updateOne({ _id: channel._id }, { ...update, updatedAt: new Date() });
+  return {};
 }
 
 async function addVideo({ url, category }) {
@@ -185,6 +205,15 @@ function wire(io) {
     });
 
     socket.on("channel:browse", async (id, ack) => ack(await browseChannel(id)));
+
+    socket.on("channel:refresh", async (id, ack) => {
+      const res = await refreshChannel(id);
+      ack(res);
+      if (res.error) return;
+      await broadcast();
+      // reading the channel worked, so YouTube is answering again
+      wakeWaiting();
+    });
 
     socket.on("channel:download", async (data, ack) => {
       const res = await addFromChannel(data || {});

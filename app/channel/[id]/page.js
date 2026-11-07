@@ -11,6 +11,7 @@ import VideoGrid from "@/components/VideoGrid";
 
 // Partials
 import ChannelImport from "./partials/ChannelImport";
+import ChannelRefresh from "./partials/ChannelRefresh";
 
 // Store
 import useLibraryStore from "@/store/useLibraryStore";
@@ -55,6 +56,7 @@ const ChannelPage = () => {
               <a href={channel.url} target="_blank" rel="noreferrer" className="btn">
                 <Icon name="external" size={20} /> Channel on YouTube
               </a>
+              <ChannelRefresh channel={channel} />
             </div>
           )}
         </div>

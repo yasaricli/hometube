@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -12,6 +11,7 @@ import Icon from "@/components/Icon";
 // Partials
 import DeleteButton from "./partials/DeleteButton";
 import Description from "./partials/Description";
+import Player from "./partials/Player";
 import UpNext from "./partials/UpNext";
 
 // Store
@@ -40,8 +40,6 @@ const Watch = () => {
   const { id } = useParams();
   const { videos, channels, categories, loaded } = useLibraryStore();
   const video = videos.find((v) => v.id === id);
-  // the video already reported as watched, so pausing and playing again doesn't report it twice
-  const reported = useRef("");
 
   if (!video) {
     return (
@@ -61,12 +59,6 @@ const Watch = () => {
   const channel = channels.find((c) => c.id === video.channel);
   const channelName = channel?.name || "Unknown channel";
 
-  const watched = () => {
-    if (reported.current === id) return;
-    reported.current = id;
-    getSocket().emit("video:watched", id, () => {});
-  };
-
   const setCategory = (e) => getSocket().emit("video:category", { id, category: e.target.value }, () => {});
 
   return (
@@ -74,7 +66,7 @@ const Watch = () => {
       <title>{`${video.title} · HomeTube`}</title>
       <div className={Styles.theater}>
         {video.status === "ready" ? (
-          <video key={id} src={`/media/${id}/video.mp4`} poster={`/media/${id}/thumb.jpg`} controls autoPlay playsInline onPlay={watched} />
+          <Player key={id} video={video} />
         ) : (
           <p className={Styles.notReady}>{notReadyText(video)}</p>
         )}

@@ -12,6 +12,28 @@
   video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 }
 
+// "Up next" card over the player once the video ends
+.autoplay {
+  position: absolute;
+  right: 24px;
+  bottom: 72px;
+  display: grid;
+  gap: 8px;
+  width: min(320px, calc(100% - 32px));
+  padding: 16px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.85);
+  color: #fff;
+
+  small { color: rgb(255 255 255 / 0.7); font-size: 13px; }
+  img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; }
+  b { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-weight: 500; }
+
+  @media (max-width: 520px) { right: 16px; bottom: 56px; img { display: none; } }
+}
+
+.autoplayActions { display: flex; justify-content: flex-end; gap: 8px; }
+
 // a long yt-dlp error stays readable instead of running across the band
 .notReady { max-width: 640px; padding: 0 16px; text-align: center; }
 

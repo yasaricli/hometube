@@ -24,6 +24,18 @@
 
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
+.refreshIcon,
+.spinning { display: inline-flex; }
+
+// the retry arrow turns backwards, so the spin follows it
+.spinning { animation: refreshSpin 0.9s linear infinite reverse; }
+
+@keyframes refreshSpin { to { transform: rotate(360deg); } }
+
+.refreshError { flex-basis: 100%; margin: 4px 0 0; color: var(--brand); font-size: 14px; }
+
+@media (max-width: 520px) { .actions { justify-content: center; } }
+
 // ---- "Get videos" dialog
 .importDialog { width: min(820px, calc(100vw - 32px)); }
 
