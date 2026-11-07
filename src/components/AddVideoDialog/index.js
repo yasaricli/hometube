@@ -14,8 +14,8 @@ import { getSocket } from "@/utils/socket";
 // Styles
 import Styles from "@/styles/dialog.module.scss";
 
-// A trigger button plus the dialog that saves a YouTube video to the library.
-const AddVideoDialog = ({ label = "Add video", primary }) => {
+// A trigger button plus the dialog that saves a YouTube video or Short, or every Short of a channel, to the library.
+const AddVideoDialog = ({ label = "Add video / Shorts", primary }) => {
   const dialog = useRef();
   const titleId = useId();
   const categories = useLibraryStore((state) => state.categories);
@@ -53,7 +53,7 @@ const AddVideoDialog = ({ label = "Add video", primary }) => {
       <dialog ref={dialog} className={Styles.dialog} aria-labelledby={titleId} onClick={(e) => e.target === dialog.current && close()}>
         <form className={Styles.sheet} onSubmit={submit}>
           <header className={Styles.head}>
-            <h2 id={titleId}>Add a video</h2>
+            <h2 id={titleId}>Add a video or Shorts</h2>
             <button type="button" className={Styles.close} onClick={close} aria-label="Close">
               <Icon name="close" size={20} />
             </button>
@@ -66,7 +66,7 @@ const AddVideoDialog = ({ label = "Add video", primary }) => {
               inputMode="url"
               required
               autoFocus
-              placeholder="https://www.youtube.com/watch?v=…"
+              placeholder="Video, Short or youtube.com/@channel/shorts link"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
@@ -87,7 +87,8 @@ const AddVideoDialog = ({ label = "Add video", primary }) => {
           )}
 
           <p className={error ? Styles.error : Styles.hint}>
-            {error || "The video is downloaded to your server and shows up on the home page when it's ready."}
+            {error ||
+              "A video shows up on the home page and a Short in Shorts once it's downloaded. A channel's Shorts link (youtube.com/@name/shorts) saves all of its Shorts."}
           </p>
 
           <footer className={Styles.foot}>

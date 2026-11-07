@@ -69,6 +69,10 @@ const Sidebar = ({ overlay }) => {
             <Icon name="home" size={22} />
             <span>Home</span>
           </button>
+          <Link href="/shorts" className={Styles.item} data-active={pathname.startsWith("/shorts")} onClick={closeSidebar}>
+            <Icon name="shorts" size={22} />
+            <span>Shorts</span>
+          </Link>
         </section>
 
         <section>

@@ -26,7 +26,7 @@ const UpNext = ({ video }) => {
   ].filter(Boolean);
   const active = chips.find((c) => c.key === filter) || chips.at(-1);
   const list = videos
-    .filter((v) => v.id !== video.id && active.test(v))
+    .filter((v) => v.id !== video.id && !v.short && active.test(v))
     .sort((a, b) => (b.status === "ready") - (a.status === "ready"))
     .slice(0, LIMIT);
 

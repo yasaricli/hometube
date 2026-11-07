@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -7,6 +8,7 @@ import Link from "next/link";
 import AppShell from "@/components/AppShell";
 import ChannelAvatar from "@/components/ChannelAvatar";
 import Icon from "@/components/Icon";
+import ShortsGrid from "@/components/ShortsGrid";
 import VideoGrid from "@/components/VideoGrid";
 
 // Partials
@@ -24,6 +26,11 @@ const ChannelPage = () => {
   const { videos, channels, loaded } = useLibraryStore();
   const channel = channels.find((c) => c.id === id);
   const saved = videos.filter((v) => v.channel === id);
+  const longs = saved.filter((v) => !v.short);
+  const shorts = saved.filter((v) => v.short);
+  const [tab, setTab] = useState("videos");
+  // a channel with only Shorts opens on them
+  const shown = shorts.length && (tab === "shorts" || !longs.length) ? "shorts" : "videos";
 
   if (!channel) {
     return (
@@ -48,7 +55,8 @@ const ChannelPage = () => {
         <div>
           <h1>{channel.name}</h1>
           <p>
-            {saved.length} saved {saved.length === 1 ? "video" : "videos"}
+            {longs.length} saved {longs.length === 1 ? "video" : "videos"}
+            {!!shorts.length && ` · ${shorts.length} ${shorts.length === 1 ? "Short" : "Shorts"}`}
           </p>
           {channel.url && (
             <div className={Styles.actions}>
@@ -62,7 +70,18 @@ const ChannelPage = () => {
         </div>
       </header>
 
-      <VideoGrid videos={saved} />
+      <div className={`${Styles.tabs} ${Styles.pageTabs}`} role="tablist" aria-label="Uploads">
+        <button type="button" role="tab" aria-selected={shown === "videos"} onClick={() => setTab("videos")}>
+          Videos
+        </button>
+        {!!shorts.length && (
+          <button type="button" role="tab" aria-selected={shown === "shorts"} onClick={() => setTab("shorts")}>
+            Shorts
+          </button>
+        )}
+      </div>
+
+      {shown === "shorts" ? <ShortsGrid videos={shorts} /> : <VideoGrid videos={longs} />}
     </AppShell>
   );
 };

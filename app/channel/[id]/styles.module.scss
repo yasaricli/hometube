@@ -2,9 +2,7 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
 
   h1 { margin: 0 0 4px; font-size: 36px; font-weight: 700; letter-spacing: -0.02em; }
   p { margin: 0 0 12px; color: var(--text-2); }
@@ -36,7 +34,29 @@
 
 @media (max-width: 520px) { .actions { justify-content: center; } }
 
+.pageTabs { margin-bottom: 24px; }
+
 // ---- "Get videos" dialog
+.tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+
+  button {
+    padding: 0 0 10px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--text-2);
+    font-size: 15px;
+    font-weight: 500;
+
+    &:hover { color: var(--text); }
+    &[aria-selected="true"] { border-bottom-color: var(--text); color: var(--text); }
+  }
+}
+
 .importDialog { width: min(820px, calc(100vw - 32px)); }
 
 .importBar {

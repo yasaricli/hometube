@@ -25,6 +25,17 @@ function categoryShare(videos) {
   return (category) => (weight[category] || 0) / top;
 }
 
+// The Shorts player's order: unwatched Shorts first, mixed by how new they are, how big their category is
+// and a good dose of chance; the watched ones follow, the ones watched longest ago leaning first.
+export function mixShorts(videos, seed, now = Date.now()) {
+  const ready = videos.filter((v) => v.status === "ready");
+  const share = categoryShare(ready);
+  const fresh = (v) => 0.35 * fade(v.savedAt, now, ADDED_FADE_DAYS) + 0.2 * share(v.category) + 0.45 * chance(v.id, seed);
+  const stale = (v) => 0.5 * (1 - fade(v.watchedAt, now, WATCHED_FADE_DAYS)) + 0.5 * chance(v.id, seed);
+  const by = (score, list) => list.map((v) => [score(v), v]).sort((a, b) => b[0] - a[0]).map(([, v]) => v);
+  return [...by(fresh, ready.filter((v) => !v.watchedAt)), ...by(stale, ready.filter((v) => v.watchedAt))];
+}
+
 // The home page's "All" view: downloaded videos mixed by how recently they were saved and watched,
 // how big their category is, and a dash of chance; the ones not downloaded yet follow, newest first.
 export function mixFeed(videos, seed, now = Date.now()) {

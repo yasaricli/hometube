@@ -20,13 +20,19 @@ const FILTERS = [
   ["all", "All"],
 ];
 
-const buttonLabel = (busy, n) => {
+const TABS = [
+  ["videos", "Videos"],
+  ["shorts", "Shorts"],
+];
+
+const buttonLabel = (busy, n, tab) => {
   if (busy) return "Adding…";
   if (!n) return "Download";
-  return `Download ${n} ${n === 1 ? "video" : "videos"}`;
+  const noun = tab === "shorts" ? "Short" : "video";
+  return `Download ${n} ${noun}${n === 1 ? "" : "s"}`;
 };
 
-// Lists the channel's uploads on YouTube; the picked ones that aren't saved yet are queued for download.
+// Lists the channel's uploads (videos or Shorts) on YouTube; the picked ones that aren't saved yet are queued for download.
 const ChannelImport = ({ channel }) => {
   const dialog = useRef();
   const titleId = useId();
@@ -38,6 +44,7 @@ const ChannelImport = ({ channel }) => {
   const [filter, setFilter] = useState("new");
   const [picked, setPicked] = useState([]);
   const [category, setCategory] = useState("");
+  const [tab, setTab] = useState("videos");
 
   // members-only uploads can't be downloaded, so they're shown but never picked
   const fresh = videos.filter((v) => !v.saved && !v.membersOnly);
@@ -49,19 +56,29 @@ const ChannelImport = ({ channel }) => {
   const estimate = (v) => v.duration * rate;
   const pickedSize = videos.filter((v) => picked.includes(v.ytId)).reduce((a, v) => a + estimate(v), 0);
 
-  const open = () => {
+  // the tab that was asked for last; an older answer arriving late is dropped
+  const asked = useRef("");
+
+  const browse = (next) => {
+    asked.current = next;
+    setTab(next);
     setVideos([]);
     setPicked([]);
     setError("");
     setFilter("new");
-    setCategory("");
     setLoading(true);
-    dialog.current.showModal();
-    getSocket().emit("channel:browse", channel.id, (res) => {
+    getSocket().emit("channel:browse", { id: channel.id, tab: next }, (res) => {
+      if (asked.current !== next) return;
       setLoading(false);
       if (res.error) return setError(res.error);
       setVideos(res.videos);
     });
+  };
+
+  const open = () => {
+    setCategory("");
+    dialog.current.showModal();
+    browse("videos");
   };
 
   const close = () => dialog.current.close();
@@ -74,7 +91,7 @@ const ChannelImport = ({ channel }) => {
     e.preventDefault();
     setBusy(true);
     const chosen = videos.filter((v) => picked.includes(v.ytId));
-    getSocket().emit("channel:download", { channel: channel.id, category, videos: chosen }, (res) => {
+    getSocket().emit("channel:download", { channel: channel.id, category, videos: chosen, shorts: tab === "shorts" }, (res) => {
       setBusy(false);
       if (res.error) return setError(res.error);
       close();
@@ -101,7 +118,18 @@ const ChannelImport = ({ channel }) => {
             </button>
           </header>
 
+          <div className={Styles.tabs} role="tablist" aria-label="Uploads">
+            {TABS.map(([key, label]) => (
+              <button key={key} type="button" role="tab" aria-selected={tab === key} onClick={() => tab !== key && browse(key)}>
+                {label}
+              </button>
+            ))}
+          </div>
+
           {loading && <p className={DialogStyles.hint}>Reading the channel on YouTube…</p>}
+          {!loading && !error && !videos.length && (
+            <p className={DialogStyles.hint}>{tab === "shorts" ? "This channel has no Shorts." : "This channel has no videos."}</p>
+          )}
           {error && <p className={DialogStyles.error}>{error}</p>}
 
           {!!videos.length && (
@@ -138,7 +166,8 @@ const ChannelImport = ({ channel }) => {
                       <span className={Styles.importTitle}>{v.title}</span>
                       {v.saved && <em>In library</em>}
                       {!v.saved && v.membersOnly && <em>Members only</em>}
-                      {!v.saved && !v.membersOnly && <small className={Styles.importSize}>≈ {fmtBytes(estimate(v))}</small>}
+                      {/* the Shorts list has no durations to estimate from */}
+                      {!v.saved && !v.membersOnly && !!v.duration && <small className={Styles.importSize}>≈ {fmtBytes(estimate(v))}</small>}
                     </label>
                   </li>
                 ))}
@@ -158,7 +187,7 @@ const ChannelImport = ({ channel }) => {
                 ))}
               </select>
             )}
-            {!!picked.length && (
+            {!!pickedSize && (
               <span className={Styles.importTotal} title="Estimated from the average size of your downloaded videos">
                 ≈ {fmtBytes(pickedSize)}
               </span>
@@ -167,7 +196,7 @@ const ChannelImport = ({ channel }) => {
               Cancel
             </button>
             <button className="btnBrand" disabled={busy || !picked.length}>
-              {buttonLabel(busy, picked.length)}
+              {buttonLabel(busy, picked.length, tab)}
             </button>
           </footer>
         </form>

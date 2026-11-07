@@ -16,6 +16,8 @@ assert.equal(nextInChannel(ep3, [ep1, ep2, ep3]).id, "ep2");
 // everything watched: the one watched longest ago
 const seen = [ep1, video("ep2", { uploadedAt: 2, watchedAt: 10 }), video("ep3", { uploadedAt: 3, watchedAt: 30 })];
 assert.equal(nextInChannel(seen[2], seen).id, "ep2");
+// Shorts play in the Shorts player, never after a video
+assert.equal(nextInChannel(ep1, [ep1, video("s", { uploadedAt: 2, short: true }), ep3]).id, "ep3");
 // the only video of its channel
 assert.equal(nextInChannel(other, [other, ep1]), undefined);
 console.log("upNext ok");

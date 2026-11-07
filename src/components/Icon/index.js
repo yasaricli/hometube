@@ -8,6 +8,17 @@ const PATHS = {
     </>
   ),
   play: <path d="M8 5.5v13l10.5-6.5z" />,
+  pause: <path d="M8.5 5.5v13M15.5 5.5v13" />,
+  shorts: (
+    <>
+      <rect x="6" y="3" width="12" height="18" rx="3" />
+      <path d="M10.5 9.5v5l4-2.5z" />
+    </>
+  ),
+  volume: <path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />,
+  muted: <path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3zM15.5 9.5l5 5M20.5 9.5l-5 5" />,
+  up: <path d="M6.5 14.5l5.5-5.5 5.5 5.5" />,
+  down: <path d="M6.5 9.5l5.5 5.5 5.5-5.5" />,
   plus: <path d="M12 5v14M5 12h14" />,
   home: <path d="M4 11l8-6.5 8 6.5v8a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" />,
   tag: (

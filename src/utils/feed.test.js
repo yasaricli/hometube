@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mixFeed } from "./feed.js";
+import { mixFeed, mixShorts } from "./feed.js";
 
 const DAY = 86_400_000;
 const now = Date.UTC(2026, 10, 5);
@@ -29,4 +29,12 @@ const rank = Object.fromEntries(Array.from({ length: 50 }, (_, s) => s).flatMap(
 const avg = (id) => Array.from({ length: 50 }, (_, s) => rank[`${s}:${id}`]).reduce((a, b) => a + b) / 50;
 assert.ok(avg("small") > avg("big0"));
 
+
+// Shorts: unwatched ones first, whatever chance says; nothing that isn't downloaded
+const shorts = [video("seen", { watchedAt: now }), video("new1"), video("queued", { status: "queued" }), video("new2")];
+for (let seed = 0; seed < 20; seed += 1) {
+  const order = mixShorts(shorts, seed, now).map((v) => v.id);
+  assert.equal(order.length, 3);
+  assert.equal(order.at(-1), "seen");
+}
 console.log("feed ok");

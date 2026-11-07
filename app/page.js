@@ -28,7 +28,8 @@ const Home = () => {
   // picked once per visit: "All" is mixed differently each time you come back, but holds still meanwhile
   const [seed] = useState(() => Math.floor(Math.random() * 2 ** 32));
   const channelName = (id) => channels.find((c) => c.id === id)?.name || "";
-  const found = videos.filter((v) => (!category || v.category === category) && matches(v, channelName(v.channel), query));
+  // Shorts live in the Shorts player
+  const found = videos.filter((v) => !v.short && (!category || v.category === category) && matches(v, channelName(v.channel), query));
   // categories and search results stay newest first, as the server sends them
   const shown = !category && !query.trim() ? mixFeed(found, seed) : found;
 

@@ -7,7 +7,7 @@ import { MONGODB_URI, PORT, MEDIA_DIR } from "./lib/config.js";
 import { Channel, Category, Video, Settings, getSettings, QUALITIES, RATE_LIMITS } from "./lib/models.js";
 import { serveMedia, mediaDir, channelDir } from "./lib/media.js";
 import { startQueue, enqueue, cancel, progress, stopRunning, wakeWaiting, resume } from "./lib/queue.js";
-import { videoIdOf, watchUrl, probe, videoFields, channelInfo, channelVideos, isBotCheck, isMembersOnly } from "./lib/youtube.js";
+import { videoIdOf, channelShortsOf, watchUrl, probe, videoFields, channelInfo, channelVideos, isBotCheck, isMembersOnly } from "./lib/youtube.js";
 
 const dev = process.argv.includes("--dev");
 const app = next({ dev });
@@ -35,6 +35,7 @@ const videoWire = (v) => ({
   membersOnly: v.status === "failed" && isMembersOnly(v.error),
   size: v.size,
   watchedAt: v.watchedAt ? new Date(v.watchedAt).getTime() : 0,
+  short: !!v.short,
   progress: progress.get(String(v._id)),
 });
 
@@ -86,8 +87,9 @@ async function refreshChannel(id) {
 }
 
 async function addVideo({ url, category }) {
+  if (channelShortsOf(url)) return addChannelShorts({ url: channelShortsOf(url), category });
   const ytId = videoIdOf(url);
-  if (!ytId) return { error: "Paste a YouTube video link." };
+  if (!ytId) return { error: "Paste a YouTube video, Short or channel Shorts link." };
   if (await Video.exists({ ytId })) return { error: "This video is already in your library." };
 
   const info = await probe(ytId).catch((err) => ({ error: err.message }));
@@ -100,30 +102,62 @@ async function addVideo({ url, category }) {
     { upsert: true, new: true },
   );
   if (!channel.avatar) avatarQueue.push(channel);
+  const fields = videoFields(info);
+  // a youtube.com/shorts/… link is a Short even when yt-dlp doesn't say so
+  if (/\/shorts\//.test(String(url))) fields.short = true;
   const video = await Video.create({
     ytId,
     url: watchUrl(ytId),
-    ...videoFields(info),
+    ...fields,
     channel: channel._id,
     category: validId(category) ? category : undefined,
   });
   return { id: String(video._id) };
 }
 
-// The channel's uploads on YouTube, each marked with whether it's already in the library.
-async function browseChannel(id) {
+const TABS = ["videos", "shorts"];
+
+// The channel's uploads on YouTube (its videos or its Shorts), each marked with whether it's already in the library.
+async function browseChannel({ id, tab }) {
+  if (!TABS.includes(tab)) return { error: "Unknown channel tab." };
   const channel = validId(id) && (await Channel.findById(id).lean());
   if (!channel?.url) return { error: "This channel has no YouTube link to read from." };
-  const uploads = await channelVideos(channel.url).catch((err) => ({ error: err.message }));
-  if (uploads.error) return { error: `Couldn't read the channel: ${uploads.error}` };
+  const listed = await channelVideos(channel.url, tab).catch((err) => ({ error: err.message }));
+  // a channel that never posted a Short has no Shorts tab at all
+  if (/does not have a \w+ tab/.test(listed.error || "")) return { videos: [] };
+  if (listed.error) return { error: `Couldn't read the channel: ${listed.error}` };
+  const uploads = listed.videos;
   const saved = new Set((await Video.find({ ytId: { $in: uploads.map((u) => u.ytId) } }, { ytId: 1 }).lean()).map((v) => v.ytId));
   return { videos: uploads.map((u) => ({ ...u, saved: saved.has(u.ytId) })) };
 }
 
 // Queues the picked uploads of a channel; details are read when each one's turn comes.
-async function addFromChannel({ channel: id, videos, category }) {
+// shorts: picked from the channel's Shorts tab.
+async function addFromChannel({ channel: id, videos, category, shorts }) {
   const channel = validId(id) && (await Channel.findById(id).lean());
   if (!channel) return { error: "This channel no longer exists." };
+  return queueUploads(channel, videos, { category, shorts });
+}
+
+// A pasted youtube.com/@name/shorts link: every Short of the channel that isn't saved yet.
+async function addChannelShorts({ url, category }) {
+  const listed = await channelVideos(url, "shorts").catch((err) => ({ error: err.message }));
+  if (/does not have a \w+ tab/.test(listed.error || "")) return { error: "This channel has no Shorts." };
+  if (listed.error) return { error: `Couldn't read the channel: ${listed.error}` };
+  if (!listed.channel.ytId) return { error: "Couldn't tell which channel this is." };
+  const channel = await Channel.findOneAndUpdate(
+    { ytId: listed.channel.ytId },
+    { name: listed.channel.name || "Unknown channel", url: listed.channel.url || url },
+    { upsert: true, new: true },
+  );
+  if (!channel.avatar) avatarQueue.push(channel);
+  const res = await queueUploads(channel, listed.videos, { category, shorts: true });
+  if (!res.ids.length) return { error: "All of this channel's Shorts are already in your library." };
+  return res;
+}
+
+// Adds the uploads that aren't saved yet to the queue; details are read when each one's turn comes.
+async function queueUploads(channel, videos, { category, shorts }) {
   // members-only videos can't be downloaded, so they're never queued
   const picked = (Array.isArray(videos) ? videos : []).filter((v) => videoIdOf(v?.ytId) === v.ytId && !v.membersOnly);
   const saved = new Set((await Video.find({ ytId: { $in: picked.map((v) => v.ytId) } }, { ytId: 1 }).lean()).map((v) => v.ytId));
@@ -136,6 +170,7 @@ async function addFromChannel({ channel: id, videos, category }) {
       duration: Number(v.duration) || 0,
       channel: channel._id,
       category: validId(category) ? category : undefined,
+      short: !!shorts,
       needsProbe: true,
     })),
   );
@@ -185,7 +220,8 @@ function wire(io) {
       ack(res);
       if (res.error) return;
       await broadcast();
-      enqueue(res.id);
+      // one video, or a channel's Shorts
+      (res.ids || [res.id]).forEach(enqueue);
       // reading the new video worked, so the connection is back for the waiting ones too
       wakeWaiting();
     });
@@ -204,7 +240,7 @@ function wire(io) {
       io.emit("settings", settings);
     });
 
-    socket.on("channel:browse", async (id, ack) => ack(await browseChannel(id)));
+    socket.on("channel:browse", async (data, ack) => ack(await browseChannel(data || {})));
 
     socket.on("channel:refresh", async (id, ack) => {
       const res = await refreshChannel(id);
