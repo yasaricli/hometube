@@ -56,7 +56,7 @@ HomeTube is meant for a private homelab: download only videos you have the right
 Requirements: Docker with the Compose plugin.
 
 ```sh
-git clone <this repository> hometube
+git clone https://github.com/yasaricli/hometube.git
 cd hometube
 docker compose up -d --build
 ```
