@@ -188,6 +188,15 @@ async function removeVideo(id) {
   await fs.rm(channelDir(video.channel), { recursive: true, force: true });
 }
 
+// Stops and removes a channel's downloads that haven't finished (queued, waiting or downloading),
+// so the queue moves on to other channels; they can be picked again later with Get videos.
+async function stopChannel(id) {
+  if (!validId(id)) return { removed: 0 };
+  const pending = await Video.find({ channel: id, status: { $in: ["queued", "waiting", "downloading"] } }, { _id: 1 }).lean();
+  for (const v of pending) await removeVideo(String(v._id));
+  return { removed: pending.length };
+}
+
 // Channel avatars are fetched one after another in the background, never blocking an add.
 const avatarQueue = {
   pending: [],
@@ -249,6 +258,12 @@ function wire(io) {
       await broadcast();
       // reading the channel worked, so YouTube is answering again
       wakeWaiting();
+    });
+
+    socket.on("channel:stop", async (id, ack) => {
+      const res = await stopChannel(id);
+      ack(res);
+      await broadcast();
     });
 
     socket.on("channel:download", async (data, ack) => {

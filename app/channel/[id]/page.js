@@ -14,6 +14,7 @@ import VideoGrid from "@/components/VideoGrid";
 // Partials
 import ChannelImport from "./partials/ChannelImport";
 import ChannelRefresh from "./partials/ChannelRefresh";
+import ChannelStop from "./partials/ChannelStop";
 
 // Store
 import useLibraryStore from "@/store/useLibraryStore";
@@ -26,6 +27,8 @@ const ChannelPage = () => {
   const { videos, channels, loaded } = useLibraryStore();
   const channel = channels.find((c) => c.id === id);
   const saved = videos.filter((v) => v.channel === id);
+  // queued, waiting or downloading: what "Stop downloads" takes off the queue
+  const unfinished = saved.filter((v) => ["queued", "waiting", "downloading"].includes(v.status)).length;
   const longs = saved.filter((v) => !v.short);
   const shorts = saved.filter((v) => v.short);
   const [tab, setTab] = useState("videos");
@@ -65,6 +68,7 @@ const ChannelPage = () => {
                 <Icon name="external" size={20} /> Channel on YouTube
               </a>
               <ChannelRefresh channel={channel} />
+              <ChannelStop channel={channel} count={unfinished} />
             </div>
           )}
         </div>
