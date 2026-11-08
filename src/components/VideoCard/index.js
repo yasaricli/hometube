@@ -36,6 +36,12 @@ const Thumb = ({ video }) => {
       {/* yt-dlp writes the thumbnail at the end, so only a ready video has one */}
       {ready && !missing && <img src={`/media/${video.id}/thumb.jpg`} alt="" loading="lazy" onError={() => setMissing(true)} />}
       {ready && !!video.duration && <span className={Styles.duration}>{fmtDuration(video.duration)}</span>}
+      {/* how far it was watched, like YouTube's red line under the thumbnail */}
+      {ready && video.position > 0 && video.duration > 0 && (
+        <span className={Styles.watched}>
+          <i style={{ width: `${Math.min(100, (video.position / video.duration) * 100)}%` }} />
+        </span>
+      )}
       {!ready && (
         <div className={Styles.pending} data-status={video.status}>
           <span>

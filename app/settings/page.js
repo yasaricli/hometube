@@ -3,6 +3,9 @@
 // Components
 import AppShell from "@/components/AppShell";
 
+// Partials
+import Storage from "./partials/Storage";
+
 // Hooks
 import useSettings from "@/hooks/useSettings";
 
@@ -21,6 +24,7 @@ const QUALITIES = [
 ];
 
 const RATE_LIMITS = [0, 1, 2, 5, 10, 20, 50];
+const SYNC_HOURS = [1, 3, 6, 12, 24];
 
 const Settings = () => {
   const { settings, status, save } = useSettings();
@@ -91,6 +95,25 @@ const Settings = () => {
                 </select>
               </label>
             </section>
+
+            <section className={Styles.card}>
+              <h2>Followed channels</h2>
+              <label className={Styles.row}>
+                <span>
+                  <b>Look for new uploads</b>
+                  <small>New videos and Shorts of the channels you follow are downloaded on their own. Follow a channel from its page.</small>
+                </span>
+                <select value={settings.syncHours} onChange={(e) => save({ syncHours: Number(e.target.value) })}>
+                  {SYNC_HOURS.map((h) => (
+                    <option key={h} value={h}>
+                      {h === 1 ? "Every hour" : `Every ${h} hours`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </section>
+
+            <Storage settings={settings} save={save} />
           </>
         )}
       </div>

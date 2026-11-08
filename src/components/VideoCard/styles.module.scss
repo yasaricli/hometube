@@ -52,6 +52,17 @@ a.card:hover .thumb img { transform: scale(1.02); }
   transition: width 0.5s linear;
 }
 
+.watched {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.35);
+
+  i { display: block; height: 100%; background: var(--brand); }
+}
+
 .info { display: flex; gap: 12px; min-width: 0; }
 
 .text {

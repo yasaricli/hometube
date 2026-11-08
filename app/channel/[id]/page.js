@@ -12,6 +12,7 @@ import ShortsGrid from "@/components/ShortsGrid";
 import VideoGrid from "@/components/VideoGrid";
 
 // Partials
+import ChannelFollow from "./partials/ChannelFollow";
 import ChannelImport from "./partials/ChannelImport";
 import ChannelRefresh from "./partials/ChannelRefresh";
 import ChannelStop from "./partials/ChannelStop";
@@ -63,6 +64,7 @@ const ChannelPage = () => {
           </p>
           {channel.url && (
             <div className={Styles.actions}>
+              <ChannelFollow channel={channel} />
               <ChannelImport channel={channel} />
               <a href={channel.url} target="_blank" rel="noreferrer" className="btn">
                 <Icon name="external" size={20} /> Channel on YouTube

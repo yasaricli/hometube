@@ -93,3 +93,70 @@
   border-radius: 18px;
   background: var(--bg);
 }
+
+// a value inside a sentence, not on a line of its own like the labels' <b>
+.card b.inline { display: inline; }
+
+.note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+// ---- Storage
+.disk {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 5px;
+  background: var(--surface-hover);
+
+  i { height: 100%; }
+}
+
+.diskOurs { background: var(--brand); }
+.diskOther { background: var(--text-2); opacity: 0.5; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 8px 0 16px;
+  color: var(--text-2);
+  font-size: 13px;
+
+  span { display: inline-flex; align-items: center; gap: 6px; }
+  i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; }
+  // the free part has no class of its own
+  i:not([class]) { background: var(--surface-hover); }
+}
+
+.channels {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  a { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  a:hover { text-decoration: underline; }
+  small { margin: 0; }
+}
+
+.more {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-2);
+  font-size: 14px;
+
+  &:hover { color: var(--text); }
+}

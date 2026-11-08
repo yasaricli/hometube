@@ -30,7 +30,8 @@
 
 @keyframes refreshSpin { to { transform: rotate(360deg); } }
 
-.refreshError { flex-basis: 100%; margin: 4px 0 0; color: var(--brand); font-size: 14px; }
+.refreshError, .refreshNote { flex-basis: 100%; margin: 4px 0 0; color: var(--brand); font-size: 14px; }
+.refreshNote { color: var(--text-2); }
 
 @media (max-width: 520px) { .actions { justify-content: center; } }
 

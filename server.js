@@ -4,9 +4,11 @@ import next from "next";
 import mongoose from "mongoose";
 import { Server } from "socket.io";
 import { MONGODB_URI, PORT, MEDIA_DIR } from "./lib/config.js";
-import { Channel, Category, Video, Settings, getSettings, QUALITIES, RATE_LIMITS } from "./lib/models.js";
+import { Channel, Category, Video, Settings, getSettings, QUALITIES, RATE_LIMITS, SYNC_HOURS, DELETE_DAYS, KEEP_COUNTS } from "./lib/models.js";
 import { serveMedia, mediaDir, channelDir } from "./lib/media.js";
 import { startQueue, enqueue, cancel, progress, stopRunning, wakeWaiting, resume } from "./lib/queue.js";
+import { startSync, followChannel, checkChannel } from "./lib/sync.js";
+import { startCleanup, runCleanup, storage } from "./lib/cleanup.js";
 import { videoIdOf, channelShortsOf, watchUrl, probe, videoFields, channelInfo, channelVideos, isBotCheck, isMembersOnly } from "./lib/youtube.js";
 
 const dev = process.argv.includes("--dev");
@@ -35,6 +37,7 @@ const videoWire = (v) => ({
   membersOnly: v.status === "failed" && isMembersOnly(v.error),
   size: v.size,
   watchedAt: v.watchedAt ? new Date(v.watchedAt).getTime() : 0,
+  position: v.position || 0,
   short: !!v.short,
   progress: progress.get(String(v._id)),
 });
@@ -48,7 +51,15 @@ async function library() {
   return {
     videos: videos.map(videoWire),
     // version: changes when the channel is refreshed, so the browser loads the new avatar
-    channels: channels.map((c) => ({ id: String(c._id), name: c.name, url: c.url, avatar: !!c.avatar, version: new Date(c.updatedAt).getTime() })),
+    channels: channels.map((c) => ({
+      id: String(c._id),
+      name: c.name,
+      url: c.url,
+      avatar: !!c.avatar,
+      follow: !!c.follow,
+      checkedAt: c.checkedAt ? new Date(c.checkedAt).getTime() : 0,
+      version: new Date(c.updatedAt).getTime(),
+    })),
     categories: categories.map((c) => ({ id: String(c._id), name: c.name })),
   };
 }
@@ -71,7 +82,8 @@ async function saveAvatar(channel) {
   return true;
 }
 
-// Reads the channel again from YouTube: its name, link and profile picture.
+// Reads the channel again from YouTube: its name, link and profile picture, and for a followed
+// channel its new uploads ({ queued }).
 async function refreshChannel(id) {
   const channel = validId(id) && (await Channel.findById(id).lean());
   if (!channel?.url) return { error: "This channel has no YouTube link to read from." };
@@ -83,7 +95,8 @@ async function refreshChannel(id) {
   if (info.url) update.url = info.url;
   // touch updatedAt even when nothing changed, so a new picture under the same name shows up
   await Channel.updateOne({ _id: channel._id }, { ...update, updatedAt: new Date() });
-  return {};
+  if (!channel.follow) return {};
+  return checkChannel({ ...channel, ...update }).catch((err) => ({ error: `Couldn't look for new uploads: ${err.message}` }));
 }
 
 async function addVideo({ url, category }) {
@@ -182,8 +195,9 @@ async function removeVideo(id) {
   if (!video) return;
   cancel(id);
   await fs.rm(mediaDir(id), { recursive: true, force: true });
-  // a channel lives only as long as one of its videos does
+  // a channel lives only as long as one of its videos does, or while it's followed
   if (await Video.exists({ channel: video.channel })) return;
+  if (await Channel.exists({ _id: video.channel, follow: true })) return;
   await Channel.deleteOne({ _id: video.channel });
   await fs.rm(channelDir(video.channel), { recursive: true, force: true });
 }
@@ -242,11 +256,37 @@ function wire(io) {
     socket.on("settings:save", async (data, ack) => {
       const quality = Number(data?.quality);
       const rateLimit = Number(data?.rateLimit);
-      if (!QUALITIES.includes(quality) || !RATE_LIMITS.includes(rateLimit)) return ack({ error: "Unknown setting." });
-      await Settings.updateOne({ key: "app" }, { quality, rateLimit, compatible: !!data.compatible }, { upsert: true });
+      const syncHours = Number(data?.syncHours);
+      const deleteWatchedDays = Number(data?.deleteWatchedDays);
+      const keepPerChannel = Number(data?.keepPerChannel);
+      const known =
+        QUALITIES.includes(quality) &&
+        RATE_LIMITS.includes(rateLimit) &&
+        SYNC_HOURS.includes(syncHours) &&
+        DELETE_DAYS.includes(deleteWatchedDays) &&
+        KEEP_COUNTS.includes(keepPerChannel);
+      if (!known) return ack({ error: "Unknown setting." });
+      const update = { quality, rateLimit, compatible: !!data.compatible, syncHours, deleteWatchedDays, keepPerChannel };
+      await Settings.updateOne({ key: "app" }, update, { upsert: true });
       const settings = await getSettings();
       ack(settings);
       io.emit("settings", settings);
+    });
+
+    // disk use per channel and what the next cleanup would delete
+    socket.on("storage", async (ack) => ack(await storage()));
+
+    socket.on("storage:cleanup", async (ack) => {
+      const res = await runCleanup(removeVideo);
+      ack(res);
+      if (res.removed) await broadcast();
+    });
+
+    socket.on("channel:follow", async ({ id, follow } = {}, ack) => {
+      if (!validId(id)) return ack({ error: "This channel no longer exists." });
+      const res = await followChannel(id, !!follow);
+      ack(res);
+      if (!res.error) await broadcast();
     });
 
     socket.on("channel:browse", async (data, ack) => ack(await browseChannel(data || {})));
@@ -299,6 +339,14 @@ function wire(io) {
       await broadcast();
     });
 
+    // where playback was left; not broadcast, the player's own store already has it
+    socket.on("video:position", async ({ id, position } = {}, ack) => {
+      const seconds = Number(position);
+      if (!validId(id) || !Number.isFinite(seconds) || seconds < 0) return ack?.();
+      await Video.updateOne({ _id: id, status: "ready" }, { position: Math.round(seconds) });
+      ack?.();
+    });
+
     socket.on("video:remove", async (id, ack) => {
       if (!validId(id)) return ack();
       await removeVideo(id);
@@ -339,6 +387,8 @@ const broadcast = wire(io);
 const changed = () => broadcast().catch((err) => console.error("broadcast failed", err));
 avatarQueue.onSaved = changed;
 await startQueue(io, changed);
+startSync({ queueUploads, enqueue, changed });
+startCleanup(removeVideo, changed);
 // channels saved before avatars existed, or whose avatar failed last time
 (await Channel.find({ avatar: { $ne: true } }).lean()).forEach((c) => avatarQueue.push(c));
 

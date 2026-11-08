@@ -8,7 +8,7 @@
     "dev": "node --env-file=.env server.js --dev",
     "build": "next build",
     "start": "node server.js",
-    "test": "node lib/youtube.test.js && node src/utils/feed.test.js && node src/utils/upNext.test.js"
+    "test": "node lib/youtube.test.js && node lib/cleanupRules.test.js && node src/utils/feed.test.js && node src/utils/upNext.test.js && node src/utils/playback.test.js"
   },
   "dependencies": {
     "mongoose": "^9.11.4",

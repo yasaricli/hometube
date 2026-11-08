@@ -32,6 +32,8 @@ const PATHS = {
   close: <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />,
   external: <path d="M13.5 4.5h6v6M19.5 4.5l-8 8M18 14v4.5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1H10" />,
   download: <path d="M12 4.5v10M7.5 10.5l4.5 4.5 4.5-4.5M5 19.5h14" />,
+  bell: <path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 2h-14zM10 20.5h4" />,
+  check: <path d="M5.5 12.5l4 4 9-9" />,
   sliders: (
     <>
       <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />

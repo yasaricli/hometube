@@ -11,6 +11,12 @@ const useLibraryStore = create((set) => ({
   setLibrary: ({ videos, channels, categories }) => set({ videos, channels, categories, loaded: true }),
   setConnected: (connected) => set({ connected }),
 
+  // where playback was left in a video, saved by the player
+  setPosition: (id, position) =>
+    set((state) => ({
+      videos: state.videos.map((v) => (v.id === id ? { ...v, position } : v)),
+    })),
+
   // live download progress for one video: { stage, percent }
   setProgress: ({ id, stage, percent }) =>
     set((state) => ({
