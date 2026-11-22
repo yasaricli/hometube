@@ -50,7 +50,8 @@ const Home = () => {
         <p className={Styles.none}>{query ? `Nothing in your library matches "${query}".` : "No videos in this category yet."}</p>
       )}
 
-      <VideoGrid videos={shown} />
+      {/* key: a new category or search starts again from the first page */}
+      <VideoGrid key={`${category}|${query}`} videos={shown} />
     </AppShell>
   );
 };
