@@ -118,3 +118,17 @@
   .sidebar[data-toggled="true"] { display: block; }
   .scrim[data-toggled="true"] { @include open-scrim; }
 }
+
+// a channel with videos still to download
+.spinner {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  border: 2px solid var(--line);
+  border-top-color: var(--text-2);
+  border-radius: 50%;
+  animation: sidebarSpin 0.8s linear infinite;
+}
+
+@keyframes sidebarSpin { to { transform: rotate(360deg); } }

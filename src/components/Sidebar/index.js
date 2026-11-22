@@ -33,6 +33,7 @@ const Sidebar = ({ overlay }) => {
   const counts = videos.reduce((acc, v) => {
     acc[v.category] = (acc[v.category] || 0) + 1;
     acc[v.channel] = (acc[v.channel] || 0) + 1;
+    if (["queued", "waiting", "downloading"].includes(v.status)) acc[`busy:${v.channel}`] = true;
     return acc;
   }, {});
   // channels that still have a video, most videos first
@@ -113,6 +114,7 @@ const Sidebar = ({ overlay }) => {
               <Link key={c.id} href={`/channel/${c.id}`} className={Styles.item} data-active={pathname === `/channel/${c.id}`} onClick={closeSidebar}>
                 <ChannelAvatar channel={c} size={24} />
                 <span>{c.name}</span>
+                {counts[`busy:${c.id}`] && <i className={Styles.spinner} role="status" aria-label="Downloading" title="Downloading" />}
               </Link>
             ))}
           </section>
