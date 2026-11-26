@@ -11,6 +11,7 @@
     "test": "node lib/youtube.test.js && node lib/cleanupRules.test.js && node src/utils/feed.test.js && node src/utils/upNext.test.js && node src/utils/playback.test.js"
   },
   "dependencies": {
+    "lucide-react": "^1.81.0",
     "mongoose": "^9.11.4",
     "next": "^16.4.3",
     "react": "^19.3.1",

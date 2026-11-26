@@ -1,63 +1,60 @@
-// Stroke icons drawn for HomeTube, 24×24.
-const PATHS = {
-  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
-  search: (
-    <>
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="M20 20l-4.4-4.4" />
-    </>
-  ),
-  play: <path d="M8 5.5v13l10.5-6.5z" />,
-  pause: <path d="M8.5 5.5v13M15.5 5.5v13" />,
-  shorts: (
-    <>
-      <rect x="6" y="3" width="12" height="18" rx="3" />
-      <path d="M10.5 9.5v5l4-2.5z" />
-    </>
-  ),
-  volume: <path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />,
-  muted: <path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3zM15.5 9.5l5 5M20.5 9.5l-5 5" />,
-  up: <path d="M6.5 14.5l5.5-5.5 5.5 5.5" />,
-  down: <path d="M6.5 9.5l5.5 5.5 5.5-5.5" />,
-  plus: <path d="M12 5v14M5 12h14" />,
-  home: <path d="M4 11l8-6.5 8 6.5v8a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z" />,
-  tag: (
-    <>
-      <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.3 7.3a1 1 0 0 1-1.4 0z" />
-      <circle cx="8" cy="8" r="1.4" />
-    </>
-  ),
-  trash: <path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l.8 12.1a1 1 0 0 0 1 .9h7.4a1 1 0 0 0 1-.9L17.5 7M9.5 7V4.5h5V7" />,
-  retry: <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v4.5H9" />,
-  close: <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />,
-  external: <path d="M13.5 4.5h6v6M19.5 4.5l-8 8M18 14v4.5a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1H10" />,
-  download: <path d="M12 4.5v10M7.5 10.5l4.5 4.5 4.5-4.5M5 19.5h14" />,
-  bell: <path d="M6.5 16.5V11a5.5 5.5 0 0 1 11 0v5.5l1.5 2h-14zM10 20.5h4" />,
-  check: <path d="M5.5 12.5l4 4 9-9" />,
-  github: <path fill="currentColor" stroke="none" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.386-1.333-1.756-1.333-1.756-1.089-.747.083-.729.083-.729 1.205.084 1.838 1.238 1.838 1.238 1.07 1.834 2.809 1.305 3.495.998.108-.775.418-1.305.762-1.605-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.96-.267 1.983-.399 3.002-.405 1.02.006 2.042.138 3.003.405 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.241 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.37.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />,
-  sliders: (
-    <>
-      <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
-      <circle cx="15" cy="7" r="2" />
-      <circle cx="9" cy="17" r="2" />
-    </>
-  ),
-};
+import {
+  Bell,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  ExternalLink,
+  House,
+  Menu,
+  Pause,
+  Play,
+  Plus,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+  Smartphone,
+  Tag,
+  Trash2,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 
-const Icon = ({ name, size = 24 }) => (
-  <svg
-    viewBox="0 0 24 24"
-    width={size}
-    height={size}
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.8"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    {PATHS[name]}
+// Lucide dropped brand icons, so the GitHub mark is drawn here.
+const Github = ({ size }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true">
+    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.386-1.333-1.756-1.333-1.756-1.089-.747.083-.729.083-.729 1.205.084 1.838 1.238 1.838 1.238 1.07 1.834 2.809 1.305 3.495.998.108-.775.418-1.305.762-1.605-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.96-.267 1.983-.399 3.002-.405 1.02.006 2.042.138 3.003.405 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.241 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.37.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
   </svg>
 );
+
+const ICONS = {
+  menu: Menu,
+  search: Search,
+  play: Play,
+  pause: Pause,
+  shorts: Smartphone,
+  volume: Volume2,
+  muted: VolumeX,
+  up: ChevronUp,
+  down: ChevronDown,
+  plus: Plus,
+  home: House,
+  tag: Tag,
+  trash: Trash2,
+  retry: RotateCcw,
+  close: X,
+  external: ExternalLink,
+  download: Download,
+  bell: Bell,
+  check: Check,
+  sliders: SlidersHorizontal,
+  github: Github,
+};
+
+const Icon = ({ name, size = 24 }) => {
+  const Component = ICONS[name];
+  return <Component size={size} strokeWidth={1.8} aria-hidden="true" />;
+};
 
 export default Icon;
