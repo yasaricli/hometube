@@ -56,6 +56,9 @@ const TopBar = () => {
         )}
         <span className={Styles.status} data-connected={connected} title={connected ? "Connected to your server" : "Reconnecting…"} />
         <AddVideoDialog />
+        <a className={Styles.iconButton} href="https://github.com/yasaricli/hometube" target="_blank" rel="noreferrer" aria-label="HomeTube on GitHub" title="HomeTube on GitHub">
+          <Icon name="github" size={22} />
+        </a>
       </div>
     </header>
   );
